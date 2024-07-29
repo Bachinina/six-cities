@@ -1,33 +1,38 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AppRoute, AuthorizationStatus, CITIES } from '../../constants/constants';
+import { AppRoute, CITIES } from '../../constants/constants';
 import { PrivateRoute, PublicRoute } from '../routes/routes';
 
-import { MainScreen, type MainScreenProps } from '../../pages/main-screen/main-screen';
+import { MainScreen } from '../../pages/main-screen/main-screen';
 import { FavoritesScreen } from '../../pages/favorites-screen/favorites-screen';
 import { LoginScreen } from '../../pages/login-screen/login-screen';
 import { OfferScreen } from '../../pages/offer-screen/offer-screen';
 import { NotFoundScreen } from '../../pages/not-found-screen/not-found-screen';
+import ScrollToTop from '../scroll-to-top/scroll-to-top';
+import { useAppSelector } from '../../hooks/store';
+import { Spinner } from '../spinner/spinner';
 
-type AppProps = MainScreenProps;
+function App() {
+  const isOffersLoading = useAppSelector((state) => state.isOffersDataLoading);
 
-function App({resultCount}: AppProps) {
+  if (isOffersLoading) {
+    return <Spinner />;
+  }
+
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
-
-        {/* главная страница '/' перенаправляет на страницу первого города в списке  */}
         <Route path={AppRoute.Main}>
           <Route
             index
-            element={<Navigate to={CITIES[0].slug}/>}
+            element={<Navigate to={CITIES[0].slug} />}
           />
 
-          {/* генерация страниц городов: '/paris', '/cologne' и др */}
           {CITIES.map((city) => (
             <Route
               key={city.slug}
               path={`/:${city.slug}`}
-              element={<MainScreen resultCount={resultCount}/>}
+              element={<MainScreen />}
             />
           ))}
         </Route>
@@ -35,27 +40,30 @@ function App({resultCount}: AppProps) {
         <Route
           path={AppRoute.Favorites}
           element={
-            <PrivateRoute authorizationStatus={AuthorizationStatus.NoAuth}>
-              <FavoritesScreen/>
+            <PrivateRoute>
+              <FavoritesScreen />
             </PrivateRoute>
           }
         />
         <Route
           path={AppRoute.Login}
           element={
-            <PublicRoute authorizationStatus={AuthorizationStatus.NoAuth}>
+            <PublicRoute>
               <LoginScreen />
             </PublicRoute>
           }
         />
         <Route
           path={AppRoute.Offer}
-          element={<OfferScreen/>}
-        >
-        </Route>
+          element={<OfferScreen />}
+        />
+        <Route
+          path={AppRoute.NotFound}
+          element={<NotFoundScreen />}
+        />
         <Route
           path='*'
-          element={<NotFoundScreen/>}
+          element={<NotFoundScreen />}
         />
       </Routes>
     </BrowserRouter>

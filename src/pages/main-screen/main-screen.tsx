@@ -1,32 +1,72 @@
+// src/components/main-screen/main-screen.tsx
 import classNames from 'classnames';
-import { useDocumentTitle } from '../../hooks/document-title';
-import { Header } from '../../components/header/header';
+import { useEffect, useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import { Card } from '../../components/card/card';
-import { mockOffer } from '../../mock/offer';
+import { Header } from '../../components/header/header';
+import { Map } from '../../components/map/map';
+import { Sort } from '../../components/sort/sort';
 import { CITIES } from '../../constants/constants';
-import { NavLink } from 'react-router-dom';
+import { useDocumentTitle } from '../../hooks/document-title';
+import { useAppDispatch, useAppSelector } from '../../hooks/store';
+import { selectCity } from '../../store/action';
+import { ServerLocation, ServerOffer } from '../../types/offer';
 
-export type MainScreenProps = {
-  resultCount: number;
-}
-
-function MainScreen({resultCount}: MainScreenProps): JSX.Element {
+function MainScreen(): JSX.Element {
   useDocumentTitle('search results');
 
-  const mockOffers = Array.from({length: resultCount}, mockOffer);
+  const dispatch = useAppDispatch();
+  const offers = useAppSelector((state) => state.offers);
+  const selectedCity = useAppSelector((state) => state.city);
+  const location = useLocation();
+
+  const [filteredOffers, setFilteredOffers] = useState<ServerOffer[]>([]);
+  const [activeCard, setActiveCard] = useState<string | null>(null);
+  const [sortType, setSortType] = useState('popular');
+
+  useEffect(() => {
+    const cityName = CITIES.find((item) => item.slug === location.pathname.slice(1));
+
+    if (cityName) {
+      dispatch(selectCity(cityName.name));
+    }
+  }, [dispatch, location.pathname]);
+
+  useEffect(() => {
+    const sortedOffers = [...offers.filter((offer) => offer.city.name === selectedCity)];
+
+    switch (sortType) {
+      case 'price-low-to-high':
+        sortedOffers.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-high-to-low':
+        sortedOffers.sort((a, b) => b.price - a.price);
+        break;
+      case 'top-rated-first':
+        sortedOffers.sort((a, b) => b.rating - a.rating);
+        break;
+      default:
+        break;
+    }
+
+    setFilteredOffers(sortedOffers);
+  }, [offers, selectedCity, sortType]);
 
   return (
     <div className="page page--gray page--main">
       <Header />
       <main className="page__main page__main--index">
-
         <h1 className="visually-hidden">Cities</h1>
         <div className="tabs">
           <section className="locations container">
             <ul className="locations__list tabs__list">
               {CITIES.map((city) => (
                 <li key={city.name} className="locations__item">
-                  <NavLink to={`/${city.slug}`} className={({isActive}) => classNames('locations__item-link tabs__item', {'tabs__item--active': isActive})}>
+                  <NavLink
+                    to={`/${city.slug}`}
+                    className={({ isActive }) => classNames('locations__item-link tabs__item', { 'tabs__item--active': isActive })}
+                    onClick={() => dispatch(selectCity(city.name))}
+                  >
                     <span>{city.name}</span>
                   </NavLink>
                 </li>
@@ -35,48 +75,39 @@ function MainScreen({resultCount}: MainScreenProps): JSX.Element {
           </section>
         </div>
         <div className="cities">
-          {/* Блок вставляется в случае, когда найдены офферы */}
+          {filteredOffers.length > 0 ? (
+            <div className="cities__places-container container">
+              <section className="cities__places places">
+                <h2 className="visually-hidden">Places</h2>
+                <b className="places__found">{filteredOffers.length} places to stay in {selectedCity}</b>
+                <Sort currentSort={sortType} onSortChange={setSortType} />
 
-          <div className="cities__places-container container">
-            <section className="cities__places places">
-              <h2 className="visually-hidden">Places</h2>
-              <b className="places__found">{resultCount} places to stay in Amsterdam</b>
-              <form className="places__sorting" action="#" method="get">
-                <span className="places__sorting-caption">Sort by </span>
-                <span className="places__sorting-type" tabIndex={0}>
-                  Popular
-                  <svg className="places__sorting-arrow" width="7" height="4">
-                    <use xlinkHref="#icon-arrow-select"></use>
-                  </svg>
-                </span>
-                <ul className="places__options places__options--custom">
-                  <li className="places__option places__option--active" tabIndex={0}>Popular</li>
-                  <li className="places__option" tabIndex={0}>Price: low to high</li>
-                  <li className="places__option" tabIndex={0}>Price: high to low</li>
-                  <li className="places__option" tabIndex={0}>Top rated first</li>
-                </ul>
-              </form>
-              <div className="cities__places-list places__list tabs__content">
-                {mockOffers.map((item) => (
-                  <Card key={item.id} environment="cities" {...item} />
-                ))}
+                <div className="cities__places-list places__list tabs__content">
+                  {filteredOffers.map((item) => (
+                    <Card key={item.id} environment="cities" {...item} onHover={setActiveCard} />
+                  ))}
+                </div>
+              </section>
+              <div className="cities__right-section">
+                <Map
+                  className='cities__map'
+                  center={CITIES.find((item) => item.name === selectedCity)?.location as ServerLocation}
+                  points={filteredOffers.map((item) => item.location)}
+                  selectedPoint={filteredOffers.find((item) => item.id === activeCard)?.location}
+                />
               </div>
-            </section>
-            <div className="cities__right-section">
-              <section className="cities__map map"></section>
             </div>
-          </div>
-
-          {/* Блок вставляется в случае, когда офферы не найдены */}
-          {/* <div className="cities__places-container cities__places-container--empty container">
+          ) : (
+            <div className="cities__places-container cities__places-container--empty container">
               <section className="cities__no-places">
                 <div className="cities__status-wrapper tabs__content">
                   <b className="cities__status">No places to stay available</b>
-                  <p className="cities__status-description">We could not find any property available at the moment in Dusseldorf</p>
+                  <p className="cities__status-description">We could not find any property available at the moment in {selectedCity}</p>
                 </div>
               </section>
               <div className="cities__right-section"></div>
-            </div> */}
+            </div>
+          )}
         </div>
       </main>
     </div>

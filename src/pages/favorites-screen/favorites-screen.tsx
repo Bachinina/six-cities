@@ -4,10 +4,13 @@ import { Footer } from '../../components/footer/footer';
 import { mockOffer } from '../../mock/offer';
 import { useDocumentTitle } from '../../hooks/document-title';
 
+const mockOffers = Array.from({ length: 5 }, mockOffer);
+
+
 function FavoritesScreen() {
   useDocumentTitle('favorites');
 
-  const offers = Array.from({length: 2}, mockOffer);
+  const offers = Array.from({ length: 2 }, mockOffer);
 
   return (
     <div className="page">
@@ -28,8 +31,9 @@ function FavoritesScreen() {
                   </div>
                 </div>
                 <div className="favorites__places">
-                  <Card environment="favorites" {...offers[0]} />
-                  <Card environment="favorites" {...offers[1]} />
+                  {mockOffers.map((item) => (
+                    <Card key={item.id} environment="favorites" {...item} />
+                  ))}
                 </div>
               </li>
 

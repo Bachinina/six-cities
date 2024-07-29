@@ -1,7 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { App } from './components/app/app';
-import { mockGetOffersAmout } from './mock/offer';
+import { store } from './store';
+import { Provider } from 'react-redux';
+import { checkAuthAction, fetchOffersAction } from './store/api-actions';
+
+// загружаем данные о всех предложениях с сервера и проверяем, авторизован ли пользователь
+store.dispatch(fetchOffersAction());
+store.dispatch(checkAuthAction());
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -9,6 +15,8 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <React.StrictMode>
-    <App resultCount={mockGetOffersAmout()} />
+    <Provider store={store}>
+      <App />
+    </Provider>
   </React.StrictMode>
 );

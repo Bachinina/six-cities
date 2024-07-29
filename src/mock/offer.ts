@@ -15,7 +15,7 @@ const mockCity = (): ServerCity => ({
   location: mockLocation()
 });
 
-export const mockGetOffersAmout = (): number => faker.number.int({ min: 1, max: 7 });
+export const mockGetOffersAmount = (): number => faker.number.int({ min: 1, max: 7 });
 
 export const mockOffer = (): ServerOffer => ({
   id: faker.string.uuid(),

@@ -1,17 +1,18 @@
 import { Navigate } from 'react-router-dom';
 import { AppRoute, AuthorizationStatus } from '../../constants/constants';
+import { useAppSelector } from '../../hooks/store';
 
 type AccessStatusProps = {
-  authorizationStatus: AuthorizationStatus;
   children: JSX.Element;
 }
 
 const createAccessStatus = (status: AuthorizationStatus, route: AppRoute) =>
-  function AccessStatus({authorizationStatus, children} : AccessStatusProps) {
+  function AccessStatus({ children }: AccessStatusProps) {
+    const authStatus = useAppSelector((state) => state.authorizationStatus);
     return (
-      authorizationStatus === status
+      authStatus === status
         ? children
-        : <Navigate to={route}/>
+        : <Navigate to={route} />
     );
   };
 
