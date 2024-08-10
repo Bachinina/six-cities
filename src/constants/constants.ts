@@ -32,6 +32,8 @@ export const CITIES: City[] = [
   { name: 'Dusseldorf', slug: 'dusseldorf', location: { latitude: 51.2277, longitude: 6.7735, zoom: 13 } }
 ] as const;
 
+export type CityName = City['name'];
+
 
 export const OFFER_TYPES = [
   'Apartment',

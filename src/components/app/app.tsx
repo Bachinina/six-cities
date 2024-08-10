@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppRoute, CITIES } from '../../constants/constants';
-import { PrivateRoute, PublicRoute } from '../routes/routes';
+import { PrivateRoute, PublicRoute } from '../../routes/routes';
 
 import { MainScreen } from '../../pages/main-screen/main-screen';
 import { FavoritesScreen } from '../../pages/favorites-screen/favorites-screen';

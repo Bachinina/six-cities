@@ -37,6 +37,6 @@ export type ServerLocation = {
 }
 
 
-export type City = ServerCity &{
+export type City = ServerCity & {
   slug: string;
 }

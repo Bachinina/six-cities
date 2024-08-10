@@ -12,22 +12,22 @@ type MapProps = {
   selectedPoint: ServerLocation | undefined;
 };
 
+const defaultCustomIcon = leaflet.icon({
+  iconUrl: '/img/pin.svg',
+  iconSize: [27, 39],
+  iconAnchor: [13.5, 39],
+});
+
+const currentCustomIcon = leaflet.icon({
+  iconUrl: '/img/pin-active.svg',
+  iconSize: [27, 39],
+  iconAnchor: [13.5, 39],
+});
+
 function Map({ className, center, points, selectedPoint }: MapProps): JSX.Element {
   const mapRef = useRef(null);
   const map = useMap(mapRef, center);
   const markersLayerRef = useRef<leaflet.LayerGroup | null>(null);
-
-  const defaultCustomIcon = leaflet.icon({
-    iconUrl: '/img/pin.svg',
-    iconSize: [27, 39],
-    iconAnchor: [15, 20],
-  });
-
-  const currentCustomIcon = leaflet.icon({
-    iconUrl: '/img/pin-active.svg',
-    iconSize: [27, 39],
-    iconAnchor: [15, 20],
-  });
 
   useEffect(() => {
 

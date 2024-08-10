@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { AxiosInstance } from 'axios';
-import { AppDispatch, State } from '.';
+import { AxiosError, AxiosInstance } from 'axios';
+import { AppDispatch, RootState } from '.';
 import { APIRoute, AuthorizationStatus } from '../constants/constants';
 import { dropToken, saveToken } from '../services/token';
 import { ServerOffer } from '../types/offer';
@@ -8,10 +8,12 @@ import { loadOffers, setOffersLoadingStatus, setUserEmail } from './action';
 import { requireAuthorization } from './action';
 import { AuthData } from '../types/auth-data';
 import { UserData } from '../types/user-data';
+import { toast } from 'react-toastify';
+import { CustomErrorResponse } from '../types/login-error';
 
 export const fetchOffersAction = createAsyncThunk<void, undefined, {
   dispatch: AppDispatch;
-  state: State;
+  state: RootState;
   extra: AxiosInstance;
 }>(
   'data/fetchOffers',
@@ -24,7 +26,7 @@ export const fetchOffersAction = createAsyncThunk<void, undefined, {
 
 export const checkAuthAction = createAsyncThunk<void, undefined, {
   dispatch: AppDispatch;
-  state: State;
+  state: RootState;
   extra: AxiosInstance;
 }>(
   'user/checkAuth',
@@ -41,7 +43,7 @@ export const checkAuthAction = createAsyncThunk<void, undefined, {
 
 export const loginAction = createAsyncThunk<void, AuthData, {
   dispatch: AppDispatch;
-  state: State;
+  state: RootState;
   extra: AxiosInstance;
 }>(
   'user/login',
@@ -52,14 +54,19 @@ export const loginAction = createAsyncThunk<void, AuthData, {
       dispatch(setUserEmail(data.email));
       dispatch(requireAuthorization(AuthorizationStatus.Auth));
     } catch (error) {
-      // обработать ошибку
+      const axiosError = error as AxiosError<CustomErrorResponse>;
+      if (axiosError.response && axiosError.response.data) {
+        toast.error(axiosError.response.data.details[0].messages[0]);
+      } else {
+        toast.error('An unknown error occurred.');
+      }
     }
   },
 );
 
 export const logoutAction = createAsyncThunk<void, undefined, {
   dispatch: AppDispatch;
-  state: State;
+  state: RootState;
   extra: AxiosInstance;
 }>(
   'user/logout',

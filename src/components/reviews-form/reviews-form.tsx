@@ -3,6 +3,9 @@ import { api } from '../../store';
 import { ServerOffer } from '../../types/offer';
 import { APIRoute } from '../../constants/constants';
 import { ReviewData } from '../../types/review-data';
+import { toast } from 'react-toastify';
+import { AxiosError } from 'axios';
+import { CustomErrorResponse } from '../../types/login-error';
 
 type ReviewsFormParams = Pick<ServerOffer, 'id'> & {
   onReviewSubmit: () => void;
@@ -34,9 +37,14 @@ function ReviewsForm({ id, onReviewSubmit }: ReviewsFormParams): JSX.Element {
     try {
       await api.post<ReviewData>(`${APIRoute.Comments}/${id}`, formData);
       setFormData(defaultFormData);
-      onReviewSubmit(); // Обновляем отзывы после успешной отправки
+      onReviewSubmit(); // обновляем отзывы после успешной отправки
     } catch (error) {
-      // вывод ошибки
+      const axiosError = error as AxiosError<CustomErrorResponse>;
+      if (axiosError.response && axiosError.response.data) {
+        toast.error(axiosError.response.data.details[0].messages[0]);
+      } else {
+        toast.error('An unknown error occurred.');
+      }
     }
   }
 
@@ -55,6 +63,7 @@ function ReviewsForm({ id, onReviewSubmit }: ReviewsFormParams): JSX.Element {
           type="radio"
           checked={formData.rating === 5}
           onChange={handleRatingChange}
+
         />
         <label htmlFor="5-stars" className="reviews__rating-label form__rating-label" title="perfect">
           <svg className="form__star-image" width="37" height="33">
